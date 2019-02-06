@@ -11,7 +11,7 @@ I will use this repository to describe my thought process, hold any code I write
 
 ## Progress
 
-- [ ] Level 0. Hello Ethernaut
+- [x] [Level 0. Hello Ethernaut](#hello)
 - [ ] Level 1. Fallback
 - [ ] Level 2. Fallout
 - [ ] Level 3. Coin Flip
@@ -35,3 +35,12 @@ I will use this repository to describe my thought process, hold any code I write
 - [ ] Level 21. Denial
 - [ ] Level 22. Shop
 
+<a name='hello'/>
+
+### Level 0
+
+This level is designed to get used to interacting with contracts through the console.
+* The level presents a series of instructions (eg. call the function `info()`)
+* It eventually instructs us to enter the password in `authenticate`
+* There is a state variable named `password` set to **ethernaut0**
+* Pass that to `authenticate` to complete the level
