@@ -1,2 +1,5 @@
 # Webstore IDE
 .idea
+
+# Compiled truffle contracts
+build
