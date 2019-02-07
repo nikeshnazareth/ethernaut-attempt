@@ -30,7 +30,7 @@ code to be compatible with the latest compiler.
 - [x] [Level 8. Vault](#vault)
 - [x] [Level 9. King](#king)
 - [x] [Level 10. Re-entrancy](#reentrance)
-- [ ] Level 11. Elevator
+- [x] [Level 11. Elevator](#elevator)
 - [ ] Level 12. Privacy
 - [ ] Level 13. Gatekeeper One
 - [ ] Level 14. Gatekeeper Two
@@ -280,3 +280,27 @@ So the strategy is:
 
 This is implemented in _migrations/level10.js_
 
+<a name='elevator'/>
+
+### Level 11
+
+* There is an `Elevator` contract
+* It has a `top` variable defaulting to _false_
+* The goal is to set that variable to _true_
+* There is a `Building` interface with one function:
+   * `function isLastFloor(uint) view external returns (bool);
+* The `Elevator` contract has a `goTo(_floor)` function that:
+   * Casts the sender to a `Building`
+   * If `isLastFloor(_floor)` return false, set `top` to `isLastFloor(_floor)`
+* Note that this implies that if the function returns the same value both times,
+  `top` remains false
+* The fact that `isLastFloor` is a `view` function seems to imply it cannot modify storage.
+* However, it is possible to cast any address to any type, so casting to `Building` does not guarantee conformance to the interface
+* This may create a run-time error if an executed function is missing or accepts the wrong parameter types
+
+So the strategy is:
+1. Create a phony `Building` contract that does not inherit from `Building`, but does implement `isLastFloor`
+1. Return _false_ on the first call and _true_ on the second call
+1. Trigger the `Elevator` contract's `goTo` function from the attacker contract.
+
+This is implemented in _migrations/level11.js_
