@@ -29,7 +29,7 @@ code to be compatible with the latest compiler.
 - [x] [Level 7. Force](#force)
 - [x] [Level 8. Vault](#vault)
 - [x] [Level 9. King](#king)
-- [ ] Level 10. Re-entrancy
+- [x] [Level 10. Re-entrancy](#reentrance)
 - [ ] Level 11. Elevator
 - [ ] Level 12. Privacy
 - [ ] Level 13. Gatekeeper One
@@ -244,3 +244,39 @@ Note: the contract should have a mechanism for us to withdraw the funds in it.
 I will ignore that for now.
 
 This is implemented in _migrations/level9.js_
+
+<a name='reentrance'/>
+
+### Level 10
+
+* There is a `Reentrance` contract with 1 ETH
+* The goal is to steal the funds from the contract
+* It tracks address balances with a `balances` mapping
+* It has a `donate` function which allows a user to donate ETH to any address
+* It has a `withdraw(_amount)` function that:
+   * confirms the message sender has a balance of at least `_amount`
+   * sends `_amount` to the message sender
+   * reduce the message sender's balance by `_amount`
+* This is vulnerable to the re-entrancy attack:
+   * the message sender is a contract
+   * it has a callback function that calls `withdraw`
+   * since `withdraw` sends funds before reducing the balance, re-entrant calls will all be executed
+     with the original balance and then the balance will be reduced after sending the funds.
+* This means that an attacker can withdraw their balance multiple times in a single call.
+* In this case, it also means that their balance will underflow to a massive value
+( which will all them to withdraw all the funds )
+* In a typical re-entrancy attack, the fallback function should have an exit condition to prevent
+  an out-of-gas exception reverting the transaction
+* In this case, the `withdraw` function sends funds with `call`, which will simply return false
+  once it is out of gas.
+
+So the strategy is:
+1. Create an attacker contract
+1. Set the fallback to call `withdraw`.
+1. Point the attacker contract to the target `Reentrance` contract
+1. Call `donate` with the attacker contract address
+1. Trigger the `withdraw` function, which will loop between the attacker fallback and `withdraw`
+1. Drain the rest of the funds.
+
+This is implemented in _migrations/level10.js_
+
