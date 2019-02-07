@@ -21,7 +21,7 @@ code to be compatible with the latest compiler.
 
 - [x] [Level 0. Hello Ethernaut](#hello)
 - [x] [Level 1. Fallback](#fallback)
-- [ ] Level 2. Fallout
+- [x] [Level 2. Fallout](#fallout)
 - [ ] Level 3. Coin Flip
 - [ ] Level 4. Telephone
 - [ ] Level 5. Token
@@ -79,3 +79,21 @@ So the strategy is:
 1. Call `withdraw` to drain the contract
 
 This is implemented in _migrations/level1.js_
+
+<a name='fallout'>
+
+### Level 2
+
+* There is a `Fallout` contract
+* The goal is to get ownership of the contract
+* There are some irrelevant functions to adjust the allocations
+(which are also buggy - sending allocations does not reduce the balance)
+* The supposed constructor is misspelled (as _Fal1out_) which means it is callable
+* It sets the owner to the caller
+
+So the strategy is to simply call that function and become the owner.
+
+This is implemented in _migrations/level2.js_
+
+Note that this bug is mitigated with the new syntax, where constructors are not named after the contract
+but are just called _constructor_.
