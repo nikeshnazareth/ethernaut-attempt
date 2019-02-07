@@ -31,7 +31,7 @@ code to be compatible with the latest compiler.
 - [x] [Level 9. King](#king)
 - [x] [Level 10. Re-entrancy](#reentrance)
 - [x] [Level 11. Elevator](#elevator)
-- [ ] Level 12. Privacy
+- [x] [Level 12. Privacy](#privacy)
 - [ ] Level 13. Gatekeeper One
 - [ ] Level 14. Gatekeeper Two
 - [ ] Level 15. Naught Coin
@@ -304,3 +304,47 @@ So the strategy is:
 1. Trigger the `Elevator` contract's `goTo` function from the attacker contract.
 
 This is implemented in _migrations/level11.js_
+
+<a name='privacy'/>
+
+### Level 12
+
+* There is an `Privacy` contract
+* It has a `locked` state variable
+* The goal is to set that to false
+* It seems similar to the [Level 8](#vault) challenge
+* There are a number of state variables, one of which is `data`
+* If we can submit a processed version of `data` to the `unlock` function, it will unlock the contract
+* We should be able to just look at the contract storage while paying attention to variable sizes.
+
+###### Storage Layout Refresher
+* The first item in a (32-byte) storage slot is lower-order aligned
+* If an item cannot fit in the rest of a storage slot, it is moved to the next one
+* Structs and array data always occupy a new (whole) slot, but individually items are still packed
+* Inherited contracts can have storage slots shared between variables from different contracts
+* `constant` variables do not occupy storage slots
+
+In our case, the storage is packed as follows:
+
+27 bytes | 2 bytes | 1 byte | 1 byte | 1 byte |
+---------|---------|--------|--------|--------|
+( unused ) | awkwardness | denomination | flattening | locked |
+
+32 bytes |
+---------|
+data\[0\]|
+
+32 bytes |
+---------|
+data\[1\]|
+
+32 bytes |
+---------|
+data\[2\]|
+
+So the strategy is:
+1. Read the 4th storage location ( `data[2]` )
+1. Take the top half ( `bytes16( data[2] )` )
+1. Pass that value to the `unlock` function
+
+This is implemented in _migrations/level12.js_
