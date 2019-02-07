@@ -24,7 +24,7 @@ code to be compatible with the latest compiler.
 - [x] [Level 2. Fallout](#fallout)
 - [x] [Level 3. Coin Flip](#coinflip)
 - [x] [Level 4. Telephone](#telephone)
-- [ ] Level 5. Token
+- [x] [Level 5. Token](#token)
 - [ ] Level 6. Delegation
 - [ ] Level 7. Force
 - [ ] Level 8. Vault
@@ -139,3 +139,26 @@ So the strategy is to call `changeOwner` from a relay contract, which will ensur
 * `msg.sender` is the address of the relay contract
 
 This is implemented in _migrations/level4.js_
+
+<a name='token'/>
+
+### Level 5
+
+* There is a `Token` contract
+* We have already been given 20 tokens
+* The goal is to get more
+* The token distribution is recorded in a state variable `balances`
+* There is a `transfer` function
+   * it accepts `_to` and `_value` parameters
+   * if confirms that the sender's balance exceeds `_value`
+   * it then reduces the sender's balance increases `_to`'s balance by `_value`
+* The `balances` and `_value` parameter have type `uint`
+* The guard against overspending is achieved by subtracting `_value` from the sender's balance
+and confirming the result is non-negative.
+* Since both parameters are `uint`s, if `_value` exceeds the sender's balance, it will underflow
+and the check will stil pass
+* Additionally, when `_value` is subtracted from the sender's balance, it will underflow.
+
+So the strategy is to send 21 tokens to anyone else so our balance will underflow.
+
+This is implemented in _migrations/level5.js_
