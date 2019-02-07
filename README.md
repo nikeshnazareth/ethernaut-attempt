@@ -26,7 +26,7 @@ code to be compatible with the latest compiler.
 - [x] [Level 4. Telephone](#telephone)
 - [x] [Level 5. Token](#token)
 - [x] [Level 6. Delegation](#delegation)
-- [ ] Level 7. Force
+- [x] [Level 7. Force](#force)
 - [ ] Level 8. Vault
 - [ ] Level 9. King
 - [ ] Level 10. Re-entrancy
@@ -181,3 +181,20 @@ to the `pwn` function of `Delegate`
 
 This is implemented in _migrations/level6.js_
 
+<a name='force'/>
+
+### Level 7
+
+* There is a `Force` contract, which is empty
+* There is no payable function.
+* The goal is to send ETH to the contract
+* There are two ways to send ETH to a contract without a payable function:
+   * we can mine directly to that address
+   * we can call `selfdestruct` on a contract with ETH, and direct the refund to the target contract
+
+So the strategy is:
+1. Create a contract that accepts ETH
+1. Send some ETH to the contract
+1. Call `selfdestruct` on the contract and direct the refund to the target
+
+This is implemented in _migrations/level7.js_
