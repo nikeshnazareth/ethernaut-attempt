@@ -27,7 +27,7 @@ code to be compatible with the latest compiler.
 - [x] [Level 5. Token](#token)
 - [x] [Level 6. Delegation](#delegation)
 - [x] [Level 7. Force](#force)
-- [ ] Level 8. Vault
+- [x] [Level 8. Vault](#vault)
 - [ ] Level 9. King
 - [ ] Level 10. Re-entrancy
 - [ ] Level 11. Elevator
@@ -198,3 +198,22 @@ So the strategy is:
 1. Call `selfdestruct` on the contract and direct the refund to the target
 
 This is implemented in _migrations/level7.js_
+
+<a name='vault'/>
+
+### Level 8
+
+* There is a `Vault` contract
+* It has a private state variable `locked` set to true
+* The goal is to set that to false
+* It has a `password` state variable that is initialised on deployment
+* There is an `unlock` function that will set `locked` to false if we supply the right password
+* The fact that the state variable is private means we can't query it with the contract interface
+* It is not a secret value though - it is still stored on the blockchain
+* We can retrieve it by looking at the contract storage
+
+So the strategy is:
+1. Get the password from the `Vault` storage
+1. Call `unlock` with the password
+
+This is implemented in _migrations/level8.js_
