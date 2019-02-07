@@ -23,7 +23,7 @@ code to be compatible with the latest compiler.
 - [x] [Level 1. Fallback](#fallback)
 - [x] [Level 2. Fallout](#fallout)
 - [x] [Level 3. Coin Flip](#coinflip)
-- [ ] Level 4. Telephone
+- [x] [Level 4. Telephone](#telephone)
 - [ ] Level 5. Token
 - [ ] Level 6. Delegation
 - [ ] Level 7. Force
@@ -123,3 +123,19 @@ So the strategy is to repeatedly (10 times):
 3. 'guess' correctly
 
 This is implemented in _migrations/level3.js_
+
+<a name='telephone'/>
+
+### Level 4
+
+* There is a `Telephone` contract
+* The goal is to get ownership of the contract
+* There is a `changeOwner` function that sets the owner to a passed value, provided `tx.origin != msg.sender`
+* Recall `tx.origin` is the externally owned account (EOA) that initiated the transaction
+* `msg.sender` is the EOA or contract that directly called the current function
+
+So the strategy is to call `changeOwner` from a relay contract, which will ensure:
+* `tx.origin` is the account that called the relay contract
+* `msg.sender` is the address of the relay contract
+
+This is implemented in _migrations/level4.js_
