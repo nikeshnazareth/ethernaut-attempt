@@ -22,7 +22,7 @@ code to be compatible with the latest compiler.
 - [x] [Level 0. Hello Ethernaut](#hello)
 - [x] [Level 1. Fallback](#fallback)
 - [x] [Level 2. Fallout](#fallout)
-- [ ] Level 3. Coin Flip
+- [x] [Level 3. Coin Flip](#coinflip)
 - [ ] Level 4. Telephone
 - [ ] Level 5. Token
 - [ ] Level 6. Delegation
@@ -97,3 +97,29 @@ This is implemented in _migrations/level2.js_
 
 Note that this bug is mitigated with the new syntax, where constructors are not named after the contract
 but are just called _constructor_.
+
+<a name='coinflip'/>
+
+### Level 3
+
+* There is a `CoinFlip` contract
+* There is a `flip` function that accepts a guess, generates a random bit and updates the winning streak:
+   * If the guess matched the random bit, increment the streak
+   * If the guess did not match the random bit, reset the streak to 0
+   * Note: the guess is a boolean, and the random bit is cast to a boolean before comparison
+* The goal is to get a winning streak of 10
+* The random number generation mechanism within `flip` is:
+   * Ensure this is the first time the function is called this block
+   * Divide the previous block's hash by 0x8000000000000000000000000000000000000000000000000000000000000000
+   * This is an integer division that rounds down
+   * Note that this value is 256 bits long (a 1 followed by 255 0s)
+   * A block hash is also 256 bits long
+   * This means the random number equals the previous block hash's first bit
+* Since block hashes are public, anyone can predict the outcome of the flip before it occurs
+
+So the strategy is to repeatedly (10 times):
+1. retrieve the previous block's hash
+2. use it to predict the outcome of the flip
+3. 'guess' correctly
+
+This is implemented in _migrations/level3.js_
