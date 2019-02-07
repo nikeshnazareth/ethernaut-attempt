@@ -25,7 +25,7 @@ code to be compatible with the latest compiler.
 - [x] [Level 3. Coin Flip](#coinflip)
 - [x] [Level 4. Telephone](#telephone)
 - [x] [Level 5. Token](#token)
-- [ ] Level 6. Delegation
+- [x] [Level 6. Delegation](#delegation)
 - [ ] Level 7. Force
 - [ ] Level 8. Vault
 - [ ] Level 9. King
@@ -162,3 +162,22 @@ and the check will stil pass
 So the strategy is to send 21 tokens to anyone else so our balance will underflow.
 
 This is implemented in _migrations/level5.js_
+
+<a name='delegation'/>
+
+### Level 6
+
+* There is a `Delegation` contract
+* The goal is to claim ownership of the contract.
+* It is initialised with a state variable equal to a `Delegate` contract
+* It's fallback function executes `delegatecall(msg.data)` on the `Delegate` contract
+* The `Delegate` contract has a `pwn` function the sets its owner to the msg sender
+* `delegatecall` is intended for library functions that execute in the context of the *caller* function
+* This means that if we can get the `Delegation` to `delegatecall` to the `pwn` function,
+it will set the owner of `Delegation` to the message sender
+
+So the strategy is to invoke `Delegation`'s fallback function with message data corresponding
+to the `pwn` function of `Delegate`
+
+This is implemented in _migrations/level6.js_
+
