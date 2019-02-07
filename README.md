@@ -28,7 +28,7 @@ code to be compatible with the latest compiler.
 - [x] [Level 6. Delegation](#delegation)
 - [x] [Level 7. Force](#force)
 - [x] [Level 8. Vault](#vault)
-- [ ] Level 9. King
+- [x] [Level 9. King](#king)
 - [ ] Level 10. Re-entrancy
 - [ ] Level 11. Elevator
 - [ ] Level 12. Privacy
@@ -217,3 +217,30 @@ So the strategy is:
 1. Call `unlock` with the password
 
 This is implemented in _migrations/level8.js_
+
+<a name='king'/>
+
+### Level 9
+
+* There is a `King` contract
+* It has a state variable `king`
+* The goal is to become the king and then prevent anyone from reclaiming the throne.
+* The contract is initialised with a 1 ETH `prize` on deployment
+* It has a payable fallback function that:
+   * ensures the transaction amount exceeds the current prize (or the sender is the owner)
+   * sends the amount to the current king
+   * makes the message sender the new king
+   * updates the prize to be the transaction amount
+* We can become king by sending more than 1 ETH.
+* If we use a contract, its fallback function will be called
+whenever the owner attempts to reclaim the thrown (because that involves sending us the new amount)
+
+So the strategy is:
+1. Create a contract to be king
+1. Set the fallback function to always revert, preventing the owner from reclaiming the throne.
+1. Claim the throne
+
+Note: the contract should have a mechanism for us to withdraw the funds in it.
+I will ignore that for now.
+
+This is implemented in _migrations/level9.js_
