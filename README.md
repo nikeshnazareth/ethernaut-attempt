@@ -36,7 +36,7 @@ code to be compatible with the latest compiler.
 - [ ] [Level 14. Gatekeeper Two](#gatekeeper2)
 - [x] [Level 15. Naught Coin](#naughtcoin)
 - [x] [Level 16. Preservation](#preservation)
-- [ ] Level 17. Locked
+- [x] [Level 17. Locked](#locked)
 - [ ] Level 18. Recovery
 - [ ] Level 19. MagicNumber
 - [ ] Level 20. Alien Codex
@@ -450,3 +450,23 @@ So the strategy is:
 1. Call `setFirstTime` with the player address, overwriting the owner storage slot
 
 This is implemented in _migrations/level16.js_
+
+<a name='locked'/>
+
+### Level 17
+
+* There is a `Locked` contract
+* It has a storage variable `unlocked` initialised to `false`
+* The goal is to set it to `true`
+* There is only one function `register`, which updates the other state variables
+* `register` declares an uninitialised
+* in the challenge version, the struct defaults to `storage`, and since it's uninitialised, it default to zero.
+* In the current version of solidity, you have to specify either `memory` or `storage` and you cannot
+  compile a contract with an uninitialised storage variable
+* In this case, values written into the struct will overwrite the first storage slot,
+  which holds the `unlocked` variable
+
+So the strategy is:
+1. Call `register` with a `bytes32` name parameter that has a non-zero last byte
+
+This is implemented in _migrations/level17.js_
