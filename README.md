@@ -34,7 +34,7 @@ code to be compatible with the latest compiler.
 - [x] [Level 12. Privacy](#privacy)
 - [x] [Level 13. Gatekeeper One](#gatekeeper1)
 - [ ] [Level 14. Gatekeeper Two](#gatekeeper2)
-- [ ] Level 15. Naught Coin
+- [x] [Level 15. Naught Coin](#naughtcoin)
 - [ ] Level 16. Preservation
 - [ ] Level 17. Locked
 - [ ] Level 18. Recovery
@@ -396,3 +396,19 @@ This is implemented in _migrations/level13.js_
    * however, a function called with `delegatecall` will not affect the called contract's state, so we can't update `entrant`
 * I can't think of another way to ensure the first two gates can be both passed.
 * I will leave it for now - if I really can't come up with any ideas I will look at the solutions
+
+<a name='naughtcoin'/>
+
+### Level 15
+
+* There is a `NaughtCoin` contract, which is a `StandardToken`
+* We currently hold all the coins.
+* The `transfer` function has been overloaded to prevent us specifically from sending the tokens.
+* The goal is to bypass the timelock and be able to transfer them freely.
+* The `StandardToken` allows us to assign tokens to other addresses (the other addresses can spend tokens on our behalf)
+
+So the strategy is:
+1. Assign the tokens to another address that we hold
+2. Transfer them to that address
+
+This is implemented in _migrations/level15.js_
