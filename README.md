@@ -32,7 +32,7 @@ code to be compatible with the latest compiler.
 - [x] [Level 10. Re-entrancy](#reentrance)
 - [x] [Level 11. Elevator](#elevator)
 - [x] [Level 12. Privacy](#privacy)
-- [ ] Level 13. Gatekeeper One
+- [x] [Level 13. Gatekeeper One](#gatekeeper1)
 - [ ] Level 14. Gatekeeper Two
 - [ ] Level 15. Naught Coin
 - [ ] Level 16. Preservation
@@ -348,3 +348,32 @@ So the strategy is:
 1. Pass that value to the `unlock` function
 
 This is implemented in _migrations/level12.js_
+
+<a name='gatekeeper1'/>
+
+### Level 13
+
+* There is a `GatekeeperOne` contract
+* The goal is to register as an entrant
+* There is an `enter` function which lets you register if you can pass three modifiers
+* The first one ensures `msg.sender != tx.origin`, which means we need to use a contract
+* The second one ensures `gasleft() % 8191 === 0`, so we have to set the gas appropriately
+* The third one ensures the passed `_gateKey` parameter satisfies three simultaneous conditions:
+   * `uint32(_gateKey) == uint16(_gateKey)` => bytes 2 and 3 (counting from the right) are zero
+   * `uint32(_gateKey) != uint64(_gateKey)` => bytes 4-7 are collectively non-zero
+   * `uint32(_gateKey) == uint16(tx.origin)` => bytes 0 and 1 are the bottom two bytes of tx.origin
+* Experimenting with Remix suggests the gas used by the first gate is 39, but the particular value will
+  depend on the compiler and optimizations used.
+* I don't know of a sensible way to deal with this, so I will just brute force possible gas values.
+* The third gate does not compile with Remix (even with an old compiler) because you can no longer cast bytes to uints.
+  This means I can't directly check the gas usage of the whole function. For simplicity, I will just provide significantly
+  more gas than required per call.
+
+So the strategy is:
+* Create a registration contract
+* Generate a `_gateKey` value in line with the third gate
+* Call `enter` with this value and (10 * 8191 + i) gas, for a range of i.
+  (Note: we don't need to brute force different transactions - the contract itself can brute force as long as we use the
+  `call` function instead of `transfer`)
+
+This is implemented in _migrations/level13.js_
