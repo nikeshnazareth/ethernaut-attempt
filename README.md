@@ -35,7 +35,7 @@ code to be compatible with the latest compiler.
 - [x] [Level 13. Gatekeeper One](#gatekeeper1)
 - [ ] [Level 14. Gatekeeper Two](#gatekeeper2)
 - [x] [Level 15. Naught Coin](#naughtcoin)
-- [ ] Level 16. Preservation
+- [x] [Level 16. Preservation](#preservation)
 - [ ] Level 17. Locked
 - [ ] Level 18. Recovery
 - [ ] Level 19. MagicNumber
@@ -412,3 +412,41 @@ So the strategy is:
 2. Transfer them to that address
 
 This is implemented in _migrations/level15.js_
+
+<a name='preservation'/>
+
+### Level 16
+
+* There is a `Preservation` contract
+* The goal is to take ownership
+* The contract has two library addresses `timeZone1Library` and `timeZone2Library`
+* When either `setFirstTime` or `setSecondTime` is called, `setTime` in the corresponding
+  library instance is executed using `delegatecall`.
+* The `LibraryContract` is specified and its `setTime` function simply sets the `storedTime` value to the passed parameter.
+* Because `delegatecall` maintains scope, this sets the `storedTime` variable in the target contract.
+* There is no direct way to set the owner.
+* I suspect we need to overflow the storage, except `storedTime` is after the `owner` variable and all
+  the relevant values are `uint`s.
+* I also suspect that any casting shenanigans we could play would be prevented by the new compiler.
+* If we could set one of the library addresses, we can point it to our own contract, which can then edit the state arbitrarily.
+* But neither of the functions that we can call directly set the state.
+* Another idea: we know the address of the libraries, so we could call them directly (to set their own state) or via `delegatecall`
+* Note: In order to use the latest compiler, I replaced the line:
+   * timeZone1Library.delegatecall(setTimeSignature, _timeStamp), with
+   * timeZone1Library.delegatecall(abi.encodeWithSignature("setTime(uint256)", _timeStamp))
+* Maybe the old `delegatecall` accepted more parameters
+* OH, I just discovered an important fact. I thought `delegatecall` did lookups by variable names.
+* Actually, **The `delegatecall` callee performs variable lookups by storage slot number**
+* Each variable name is simply an index into the storage
+* So in this case, the library contract has `storedTime` set at slot 0. When `setTime` is called, it sets
+  slot 0 to be the passed in `uint`.
+* When the library is `delegatecall`ed from the `Preservation` contract, it will set whatever is stored at slot 0,
+which happens to be the first library address.
+
+So the strategy is:
+1. Create an attack contract with a `setTime(uint)` function that overwrites the third storage slot
+1. Call `setSecondTime` with the attack contract address as a parameter
+   ( our attack contract is now `timeZone1Library` )
+1. Call `setFirstTime` with the player address, overwriting the owner storage slot
+
+This is implemented in _migrations/level16.js_
