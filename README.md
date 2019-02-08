@@ -33,7 +33,7 @@ code to be compatible with the latest compiler.
 - [x] [Level 11. Elevator](#elevator)
 - [x] [Level 12. Privacy](#privacy)
 - [x] [Level 13. Gatekeeper One](#gatekeeper1)
-- [ ] Level 14. Gatekeeper Two
+- [ ] [Level 14. Gatekeeper Two](#gatekeeper2)
 - [ ] Level 15. Naught Coin
 - [ ] Level 16. Preservation
 - [ ] Level 17. Locked
@@ -377,3 +377,22 @@ So the strategy is:
   `call` function instead of `transfer`)
 
 This is implemented in _migrations/level13.js_
+
+<a name='gatekeeper2'/>
+
+### Level 14
+
+* There is a `GatekeeperTwo` contract
+* This has the same structure as the previous challenge with different modifiers
+* The first one ensures `msg.sender != tx.origin`, which means we need to use a contract
+* The second one uses inline assembly to ensure `extcodesize(caller) == 0`. This implies that the caller does not have any code (it is not a contract)
+* I think these two conditions can be met if we use `delegatecall` in our contract (so the `caller` parameter is still the externally-owned account).
+* I would have guessed that this means we can't update the state of the `GatekeeperTwo`, but maybe it uses its own variables if our contract does not have a matching variable
+  (ie. if our contract does not have an `entrant` variable, then we can still update the `GatekeeperTwo` contract's `entrant` variable through `delegatecall`)
+* Or maybe we have to use assembly to jump to the function without changing the context, but if such a thing is possible, it is probably a massive security issue
+* Experimenting with Remix I have been able to confirm:
+   * `caller` is typically the calling contract, but if `delegatecall` is used, it is the previous caller.
+   * this means we can bypass the `extcodesize(caller) == 0` check if we use `delegatecall`
+   * however, a function called with `delegatecall` will not affect the called contract's state, so we can't update `entrant`
+* I can't think of another way to ensure the first two gates can be both passed.
+* I will leave it for now - if I really can't come up with any ideas I will look at the solutions
