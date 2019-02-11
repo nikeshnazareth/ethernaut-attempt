@@ -37,7 +37,7 @@ code to be compatible with the latest compiler.
 - [x] [Level 15. Naught Coin](#naughtcoin)
 - [x] [Level 16. Preservation](#preservation)
 - [x] [Level 17. Locked](#locked)
-- [ ] Level 18. Recovery
+- [x] [Level 18. Recovery](#recovery)
 - [ ] Level 19. MagicNumber
 - [ ] Level 20. Alien Codex
 - [ ] Level 21. Denial
@@ -470,3 +470,24 @@ So the strategy is:
 1. Call `register` with a `bytes32` name parameter that has a non-zero last byte
 
 This is implemented in _migrations/level17.js_
+
+<a name='recovery'/>
+
+### Level 18
+
+* There is a `Recovery` contract
+* It generates new `SimpleToken` contracts
+* The creator generated a new token, sent ETH to the contract and has now lost the address
+* The goal is to recover the lost ETH
+* The first step should be to find the lost contract. When contracts are deployed, addresses are generated as follows:
+   * RLP encode \[ sender, nonce ]
+   * Compute Keccak256 of the result
+   * Take the bottom 20 bytes
+* Since we know the `Recovery` contract address and we're trying to find the first deployed contract (nonce = 1), we should be able to calculate the address.
+* The `SimpleToken` contract has a `destroy` function that will return the funds to the specified address
+
+So the strategy is:
+1. Calculate the address of the `SimpleToken` contract
+1. Call `destroy` with the player address
+
+This is implemented in _migrations/level18.js_
