@@ -38,7 +38,7 @@ code to be compatible with the latest compiler.
 - [x] [Level 16. Preservation](#preservation)
 - [x] [Level 17. Locked](#locked)
 - [x] [Level 18. Recovery](#recovery)
-- [ ] Level 19. MagicNumber
+- [x] [Level 19. MagicNumber](#magicnumber)
 - [ ] Level 20. Alien Codex
 - [ ] Level 21. Denial
 - [ ] Level 22. Shop
@@ -491,3 +491,17 @@ So the strategy is:
 1. Call `destroy` with the player address
 
 This is implemented in _migrations/level18.js_
+
+<a name='magicnumber'/>
+
+### Level 19
+
+* There is a `MagicNumber` contract
+* We need to provide it with a `Solver` contract that
+   1. returns 42 when `whatIsTheMeaningOfLife()` is called
+   1. has at most 10 opcodes
+* There is nothing in the supplied `MagicNumber` contract to check the code size, but presumably the one deployed to the Ethernaut calls `extcodesize` when validating the contract.
+* This seems like a good opportunity to learn Solidity assembly. I will write any notes I take in an `Assembly.md` file in this repository.
+* This problem requires a detailed explanation. I have written my analysis in MagicNumber.md
+
+The solution is implemented in _migrations/level19.js_
