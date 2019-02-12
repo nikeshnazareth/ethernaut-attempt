@@ -41,7 +41,7 @@ code to be compatible with the latest compiler.
 - [x] [Level 19. MagicNumber](#magicnumber)
 - [x] [Level 20. Alien Codex](#codex)
 - [x] [Level 21. Denial](#denial)
-- [ ] Level 22. Shop
+- [x] [Level 22. Shop](#shop)
 
 <a name='hello'/>
 
@@ -558,3 +558,34 @@ So the strategy is:
 * Call `setWithdrawPartner` from the contract
 
 This is implemented in _migrations/level21.js_
+
+<a name='shop'/>
+
+### Level 22
+
+* There is a `Shop` contract
+* It contains a single item and a boolean indicating if it is bought or sold
+* It contains a price for the item
+* The goal is to get the item for less than the specified price
+* The `buy` function
+   * Treats the message sender like a `Buyer` (an interface with a `view` function `price`)
+   * Confirms the offered price meets or exceeds the asking price
+   * Sells the item at the offered price (which is retrieved with a second call)
+* This challenge is very similar to the Level 11 `Elevator` challenge:
+   * we can create a contract has a `price` function that doesn't conform to the `Buyer` interface
+   * specifically, it doesn't have to be a view function.
+   * If it returns a high price the first time it is called and a low price the second time, we will get the item for the lower price
+* The additional complication is that each call only gets 3000 gas
+* This is enough to read from storage, but not to write to storage
+* Therefore we can't toggle a storage variable in between calls like we did in Level 11
+* Moreover, both calls are identical so there is no context in the call information to distinguish them
+* The only thing that changes between calls is that `isSold` in the `Shop` contract gets toggled
+* Fortunately, the `isSold` variable in `Shop` is public (so we can query it)
+* Interestingly, this means that our price function can be a `view` function which conforms to the interface
+
+So the strategy is:
+* Create a `Buyer` contract
+* The `price` function reads the `Shop`s `isSold` variable and returns a high price when it is false, and a low price when it is true
+* Call the `buy` function from the `Buyer` contract
+
+This is implemented in _migrations/level22.js_
