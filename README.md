@@ -39,7 +39,7 @@ code to be compatible with the latest compiler.
 - [x] [Level 17. Locked](#locked)
 - [x] [Level 18. Recovery](#recovery)
 - [x] [Level 19. MagicNumber](#magicnumber)
-- [ ] Level 20. Alien Codex
+- [x] [Level 20. Alien Codex](#codex)
 - [ ] Level 21. Denial
 - [ ] Level 22. Shop
 
@@ -505,3 +505,33 @@ This is implemented in _migrations/level18.js_
 * This problem requires a detailed explanation. I have written my analysis in MagicNumber.md
 
 The solution is implemented in _migrations/level19.js_
+
+<a name='codex'/>
+
+### Level 20
+
+* There is an ownable `AlienCodex` contract
+* The goal is to take ownership
+* It has three functions to modify a `codex` array.
+All of them are protected by a modifier than ensures `make_contact` has already been called
+* `make_contact` accepts a `bytes32[]` parameter that must be at least (1 << 200) long.
+* Obviously, we can't send such a long parameter - we have to simply set the length field to be larger than (1 << 200)
+* The `record` function pushes a `bytes32` onto the array
+* The `retract` function decrements the array length
+* The `revise` function lets us set the value of the array at any index we choose to whatever value we choose.
+* Recall from `Assembly.md` a dynamic array is stored as follows:
+   * the array storage slot holds the length of the array
+   * the data is stored contiguously at a location specified by keccak256(index of storage slot)
+* Experimenting with the contract confirms:
+   * the `retract` function does not do any bounds checking - we can underflow it
+   * the `revise` function does bounds checking - you cannot update beyond the length of the array
+   * however, if the array is longer than the memory address space, it wraps back to the start
+
+So the strategy is:
+* Send a message to `make_contact` with a (fake) message length greater than 1 << 200
+* Call `retract` to underflow the array (so the whole address space is part of the array)
+* Calculate the array contents location, and the relative offset to the `owner` variable
+ ( which is just the twos complement of the array content location )
+* Call `revise` to overwrite the `owner` variable with our own address
+
+This is implemented in _migrations/level20.js_
