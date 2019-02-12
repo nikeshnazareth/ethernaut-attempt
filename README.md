@@ -40,7 +40,7 @@ code to be compatible with the latest compiler.
 - [x] [Level 18. Recovery](#recovery)
 - [x] [Level 19. MagicNumber](#magicnumber)
 - [x] [Level 20. Alien Codex](#codex)
-- [ ] Level 21. Denial
+- [x] [Level 21. Denial](#denial)
 - [ ] Level 22. Shop
 
 <a name='hello'/>
@@ -535,3 +535,26 @@ So the strategy is:
 * Call `revise` to overwrite the `owner` variable with our own address
 
 This is implemented in _migrations/level20.js_
+
+<a name='denial'/>
+
+### Level 21
+
+* There is a `Denial` contract
+* The goal is to prevent the owner from retrieving their funds
+* We can become the withdraw partner with the `setWithdrawPartner` function
+* The `withdraw` function calculates 1% of the remaining funds (rounding down),
+  sends the that amount to the withdraw partner and then the owner.
+* Obviously this means that if the balance dips below 100, the funds are trapped
+* More relevantly, the fact that the funds get sent to us in the same transaction as the owner
+  means that we can prevent the transaction from occurring.
+* The contract makes a low-level `call` and ignores the result, so we can't simply `revert`
+* However, we can waste the remaining gas with an `assert(false)` statement
+* Note that the gas is not limited to 2300 because the fallback function is invoked with `call` and not `send` or `transfer`
+
+So the strategy is:
+* Create a contract to be the withdraw partner
+* Set the fallback function to execute `assert(false)`
+* Call `setWithdrawPartner` from the contract
+
+This is implemented in _migrations/level21.js_
