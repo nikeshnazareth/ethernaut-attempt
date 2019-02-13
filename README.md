@@ -33,7 +33,7 @@ code to be compatible with the latest compiler.
 - [x] [Level 11. Elevator](#elevator)
 - [x] [Level 12. Privacy](#privacy)
 - [x] [Level 13. Gatekeeper One](#gatekeeper1)
-- [ ] [Level 14. Gatekeeper Two](#gatekeeper2)
+- [x] [Level 14. Gatekeeper Two](#gatekeeper2)
 - [x] [Level 15. Naught Coin](#naughtcoin)
 - [x] [Level 16. Preservation](#preservation)
 - [x] [Level 17. Locked](#locked)
@@ -396,6 +396,20 @@ This is implemented in _migrations/level13.js_
    * however, a function called with `delegatecall` will not affect the called contract's state, so we can't update `entrant`
 * I can't think of another way to ensure the first two gates can be both passed.
 * I will leave it for now - if I really can't come up with any ideas I will look at the solutions
+* I had to look up the answer, although it seems obvious in retrospect
+* The important insight is that a contract's constructor returns the run-time contract code,
+which means `extcodesize` returns 0 before the constructor completes.
+* The `caller` address still points to the address that will eventually hold the code.
+* So we just need to register as an entrant in the constructor of our contract to bypass the first two gates.
+* The third gate ensures the passed `_gateKey` is the `uint64` bit inverse of `keccak256(msg.sender)` (ie. our contract address), cast to `bytes8`
+
+So the strategy is:
+* Create a registration contract
+* In the constructor of the contract:
+   1. calculate the `_gateKey` (using the contract's address)
+   1. pass this value to the `enter` function on the `GatekeeperTwo` contract
+
+This is implemented in _migrations/level14.js_
 
 <a name='naughtcoin'/>
 
